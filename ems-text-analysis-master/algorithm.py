@@ -2,6 +2,8 @@
 
 import numpy as np
 import pandas as pd
+import csv
+import datetime
 from decimal import Decimal
 
 ############ This is the input data #############
@@ -65,21 +67,41 @@ for i in range(0, len(data)):
 data['drugS'] = scores
 
 #### PERFORM LOGIT
-prob_val = input("Enter probability value from 0 to 1. 'exs: 0.15, 0.75, 0.50 etc.\n: ")
-print(prob_val)
+##prob_val = input("Enter probability value from 0 to 1. 'exs: 0.15, 0.75, 0.50 etc.\n: ")
+prob_val = 0.5
+
 data["probs"] = data.apply(logitreg, axis = 1) ## This would be the value to be adjusted for based on preference
+
 
 ### count of identified overdoses displayed out of the total # of records inputted
 ### then a csv of just the overdoses with the date of the run as the title
-
-
-print(data['probs'])
+probsList = []
+probsIndexList = []
+csvFileArray = []
+csvFileArrayFinal = []
 
 for i in range(0,len(data['probs'])):
     x = Decimal(data['probs'][i])
-    print(round(x,5))
+    x = ((round(x,5)))
+    if Decimal(x)>=Decimal(prob_val):
+        print(x, ' ', i)
+        probsList.append(x)
+        probsIndexList.append(i)
 
+with open('FAKE_DATA_heim.csv', newline='') as f:
+    reader = csv.reader(f)
+    for row in csv.reader(f, delimiter=','):
+        csvFileArray.append(row)
 
-##example record
-##print(data['probs'][0])
+f.close()
 
+for item in probsIndexList:
+    csvFileArrayFinal.append(csvFileArray[item+1])
+
+now = datetime.datetime.now()
+title = now.strftime("%Y-%m-%d")
+
+my_df = pd.DataFrame(csvFileArrayFinal)
+my_df.to_csv(title + ".csv", index=False, header=False)
+
+print(data)
